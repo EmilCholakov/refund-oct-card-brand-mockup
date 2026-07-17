@@ -154,7 +154,10 @@
 
       <div style="position:relative;">
         <button class="add-brand-btn" onclick="toggleBrandPicker(event)">+ Add Card Brand</button>
-        <div class="brand-picker" id="brandPicker"></div>
+        <div class="brand-picker" id="brandPicker">
+          <input type="text" class="brand-picker-search" id="brandSearch" placeholder="Search card brands…" oninput="renderBrandPicker(this.value)">
+          <div class="brand-picker-list" id="brandPickerList"></div>
+        </div>
       </div>
       <div class="locked-msg" id="lockedMsg"></div>
     </div>

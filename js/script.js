@@ -72,12 +72,24 @@ const map = [
   }
 
   const AVAILABLE_BRANDS = [
-    { name: 'Maestro',      initials: 'MAE',  color: '#0099df' },
+    { name: 'Maestro',        initials: 'MAE',  color: '#0099df' },
     { name: 'American Express', initials: 'AMEX', color: '#2557a4' },
-    { name: 'Discover',     initials: 'DISC', color: '#f68121' },
-    { name: 'Diners Club',  initials: 'DINE', color: '#0079be' },
-    { name: 'JCB',          initials: 'JCB',  color: '#0b7b3e' },
-    { name: 'UnionPay',     initials: 'UP',   color: '#e21836' },
+    { name: 'Discover',       initials: 'DISC', color: '#f68121' },
+    { name: 'Diners Club',    initials: 'DINE', color: '#0079be' },
+    { name: 'JCB',            initials: 'JCB',  color: '#0b7b3e' },
+    { name: 'UnionPay',       initials: 'UP',   color: '#e21836' },
+    { name: 'Amex Corporate', initials: 'AMEX', color: '#1b3f73' },
+    { name: 'Aura',           initials: 'AURA', color: '#7b3fa0' },
+    { name: 'Bancontact',     initials: 'BCMC', color: '#ffd200' },
+    { name: 'Cartes Bancaires', initials: 'CB',  color: '#003d7c' },
+    { name: 'Elo',            initials: 'ELO',  color: '#000000' },
+    { name: 'Interac',        initials: 'INT',  color: '#f26522' },
+    { name: 'Mir',            initials: 'MIR',  color: '#4bb44b' },
+    { name: 'RuPay',          initials: 'RUP',  color: '#0f4c81' },
+    { name: 'Sodexo',         initials: 'SDX',  color: '#e2001a' },
+    { name: 'Troy',           initials: 'TROY', color: '#00a651' },
+    { name: 'Verve',          initials: 'VRV',  color: '#003057' },
+    { name: 'Visa Electron',  initials: 'VE',   color: '#1a1f71' },
   ];
 
   function addedBrandNames(){
@@ -85,15 +97,21 @@ const map = [
       .map(tr => tr.querySelector('.brand-cell').textContent.trim().replace(/\s*\(default\)\s*$/, ''));
   }
 
-  function renderBrandPicker(){
-    const picker = document.getElementById('brandPicker');
+  function renderBrandPicker(query){
+    query = (query || '').trim().toLowerCase();
+    const list = document.getElementById('brandPickerList');
     const already = addedBrandNames();
-    const remaining = AVAILABLE_BRANDS.filter(b => !already.includes(b.name));
+    let remaining = AVAILABLE_BRANDS.filter(b => !already.includes(b.name));
+    if(query){
+      remaining = remaining.filter(b => b.name.toLowerCase().startsWith(query));
+    }
+    remaining.sort((a, b) => a.name.localeCompare(b.name));
+
     if(remaining.length === 0){
-      picker.innerHTML = '<div class="brand-picker-empty">All available brands have been added.</div>';
+      list.innerHTML = `<div class="brand-picker-empty">${already.length >= AVAILABLE_BRANDS.length ? 'All available brands have been added.' : 'No card brand matches “' + query + '”.'}</div>`;
       return;
     }
-    picker.innerHTML = remaining.map(b => `
+    list.innerHTML = remaining.map(b => `
       <button type="button" class="brand-picker-item" onclick="pickBrand('${b.name}')">
         <span class="brand-swatch" style="background:${b.color};font-size:7px;">${b.initials}</span>
         ${b.name}
@@ -105,14 +123,22 @@ const map = [
     e.stopPropagation();
     const picker = document.getElementById('brandPicker');
     const willOpen = !picker.classList.contains('open');
-    if(willOpen) renderBrandPicker();
     picker.classList.toggle('open', willOpen);
+    if(willOpen){
+      const search = document.getElementById('brandSearch');
+      search.value = '';
+      renderBrandPicker('');
+      search.focus();
+    }
   }
   document.addEventListener('click', e => {
     const picker = document.getElementById('brandPicker');
     if(picker && !picker.contains(e.target) && !e.target.classList.contains('add-brand-btn')){
       picker.classList.remove('open');
     }
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') document.getElementById('brandPicker').classList.remove('open');
   });
 
   function pickBrand(name){
