@@ -5,7 +5,15 @@ const map = [
     { chk: 'chkManualOct',    col: 'manualOct',     th: 'thManualOct',    label: 'Manual OCT / Payout' },
   ];
 
-  function syncColumns(){
+  // Tracks the previous state of each master toggle so we can tell an
+  // OFF -> ON transition apart from just re-rendering the modal.
+  const prevMasterState = {};
+  map.forEach(m => { prevMasterState[m.chk] = document.getElementById(m.chk).checked; });
+
+  // Applies the current lock/grey state to every brand column, based on the
+  // master toggles. Does NOT change checked values on its own (except forcing
+  // false while locked) — safe to call any time the UI re-renders.
+  function applyLockState(){
     let lockedLabels = [];
     map.forEach(m => {
       const mainEnabled = document.getElementById(m.chk).checked;
@@ -25,10 +33,23 @@ const map = [
       : '';
   }
 
-  map.forEach(m => document.getElementById(m.chk).addEventListener('change', syncColumns));
+  // Fires only when a master toggle's checkbox actually changes. An OFF -> ON
+  // transition resets that column to active (checked) for every brand, per
+  // the spec: enabling the main toggle enables the card brand config by
+  // default. Flipping it back OFF clears/locks the column as before.
+  function handleMasterToggleChange(m){
+    const nowEnabled = document.getElementById(m.chk).checked;
+    if(nowEnabled && !prevMasterState[m.chk]){
+      document.querySelectorAll('.col-' + m.col).forEach(cb => { cb.checked = true; });
+    }
+    prevMasterState[m.chk] = nowEnabled;
+    applyLockState();
+  }
+
+  map.forEach(m => document.getElementById(m.chk).addEventListener('change', () => handleMasterToggleChange(m)));
 
   function openModal(){
-    syncColumns();
+    applyLockState();
     document.getElementById('overlay').classList.add('open');
   }
   function closeModal(){
@@ -78,7 +99,7 @@ const map = [
     `;
     document.getElementById('brandRows').appendChild(tr);
     // New brand defaults to whatever the master toggles currently allow
-    syncColumns();
+    applyLockState();
     showToast(name + ' added — defaults follow the main toggles');
   }
 
@@ -106,4 +127,4 @@ const map = [
     closeConfirm();
   }
 
-  syncColumns();
+  applyLockState();
