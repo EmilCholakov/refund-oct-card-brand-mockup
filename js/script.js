@@ -71,22 +71,64 @@ const map = [
     showToast('Card brand settings saved');
   }
 
-  let brandCounter = 0;
-  const brandSwatchColors = ['#0f6b3f','#8e2de2','#c2185b','#e67e22','#00796b','#5d4037'];
+  const AVAILABLE_BRANDS = [
+    { name: 'Maestro',      initials: 'MAE',  color: '#0099df' },
+    { name: 'American Express', initials: 'AMEX', color: '#2557a4' },
+    { name: 'Discover',     initials: 'DISC', color: '#f68121' },
+    { name: 'Diners Club',  initials: 'DINE', color: '#0079be' },
+    { name: 'JCB',          initials: 'JCB',  color: '#0b7b3e' },
+    { name: 'UnionPay',     initials: 'UP',   color: '#e21836' },
+  ];
 
-  function promptAddBrand(){
-    const name = prompt('Card brand name (e.g. Amex, Discover, Maestro):');
-    if(!name || !name.trim()) return;
-    addBrandRow(name.trim());
+  function addedBrandNames(){
+    return Array.from(document.querySelectorAll('#brandRows tr'))
+      .map(tr => tr.querySelector('.brand-cell').textContent.trim().replace(/\s*\(default\)\s*$/, ''));
   }
 
-  function addBrandRow(name){
+  function renderBrandPicker(){
+    const picker = document.getElementById('brandPicker');
+    const already = addedBrandNames();
+    const remaining = AVAILABLE_BRANDS.filter(b => !already.includes(b.name));
+    if(remaining.length === 0){
+      picker.innerHTML = '<div class="brand-picker-empty">All available brands have been added.</div>';
+      return;
+    }
+    picker.innerHTML = remaining.map(b => `
+      <button type="button" class="brand-picker-item" onclick="pickBrand('${b.name}')">
+        <span class="brand-swatch" style="background:${b.color};font-size:7px;">${b.initials}</span>
+        ${b.name}
+      </button>
+    `).join('');
+  }
+
+  function toggleBrandPicker(e){
+    e.stopPropagation();
+    const picker = document.getElementById('brandPicker');
+    const willOpen = !picker.classList.contains('open');
+    if(willOpen) renderBrandPicker();
+    picker.classList.toggle('open', willOpen);
+  }
+  document.addEventListener('click', e => {
+    const picker = document.getElementById('brandPicker');
+    if(picker && !picker.contains(e.target) && !e.target.classList.contains('add-brand-btn')){
+      picker.classList.remove('open');
+    }
+  });
+
+  function pickBrand(name){
+    const brand = AVAILABLE_BRANDS.find(b => b.name === name);
+    document.getElementById('brandPicker').classList.remove('open');
+    if(brand) addBrandRow(brand.name, brand.color, brand.initials);
+  }
+
+  let brandCounter = 0;
+
+  function addBrandRow(name, color, initials){
     brandCounter++;
-    const color = brandSwatchColors[brandCounter % brandSwatchColors.length];
-    const initials = name.trim().slice(0,4).toUpperCase();
     const rowId = 'brand-' + brandCounter;
     const tr = document.createElement('tr');
     tr.setAttribute('data-brand', rowId);
+    tr.className = 'brand-row-new';
     tr.innerHTML = `
       <td><div class="brand-row-inner">
         <div class="brand-cell"><div class="brand-swatch" style="background:${color};font-size:7px;">${initials}</div>${name}</div>
@@ -98,9 +140,10 @@ const map = [
       <td><input type="checkbox" class="cb-check col-manualOct" checked></td>
     `;
     document.getElementById('brandRows').appendChild(tr);
-    // New brand defaults to whatever the master toggles currently allow
+    // New brand defaults to whatever the master toggles currently allow —
+    // this is the same lock/inherit logic every other brand uses.
     applyLockState();
-    showToast(name + ' added — defaults follow the main toggles');
+    showToast(name + ' added — inherited the current main toggle settings');
   }
 
   let pendingRemove = null;
