@@ -71,11 +71,9 @@ const map = [
 
   function toggleBrandPicker(e){
     e.stopPropagation();
-    let firstEverOpen = false;
-    try { firstEverOpen = !localStorage.getItem('cardBrandTourSeen'); } catch(err) {}
-    markFeatureIntroSeen();
-    const picker = document.getElementById('brandPicker');
     const btn = document.getElementById('brandToggleBtn');
+    if(btn) btn.classList.remove('pulse');
+    const picker = document.getElementById('brandPicker');
     const willOpen = !picker.classList.contains('open');
     picker.classList.toggle('open', willOpen);
     if(btn) btn.classList.toggle('active', willOpen);
@@ -84,21 +82,14 @@ const map = [
       search.value = '';
       renderBrandPicker('');
       search.focus();
-      // First time ever opening it — walk the user through what happens next,
-      // instead of auto-launching the tour on page load.
-      if(firstEverOpen) setTimeout(startTour, 150);
     }
   }
   document.addEventListener('click', e => {
     const picker = document.getElementById('brandPicker');
     const btn = document.getElementById('brandToggleBtn');
-    const tooltip = document.querySelector('.tour-tooltip');
-    if(picker && !picker.contains(e.target) && !(btn && btn.contains(e.target)) && !(tooltip && tooltip.contains(e.target))){
+    if(picker && !picker.contains(e.target) && !(btn && btn.contains(e.target))){
       picker.classList.remove('open');
       if(btn) btn.classList.remove('active');
-      // Dismissing the dropdown this way removes the thing the tour is
-      // pointing at — the walkthrough shouldn't linger on screen after that.
-      if(tourDom) endTour();
     }
   });
   document.addEventListener('keydown', e => {
@@ -110,9 +101,6 @@ const map = [
     document.getElementById('brandPicker').classList.remove('open');
     document.getElementById('brandToggleBtn').classList.remove('active');
     if(brand) addBoundBrand(brand);
-    // The tour's only step is "pick a brand" — performing that action
-    // finishes the tour on its own, no need to click its own button.
-    if(tourDom) endTour();
   }
 
   let brandCounter = 0;
@@ -152,46 +140,6 @@ const map = [
     empty.style.display = document.querySelectorAll('#boundBrands .bound-brand').length ? 'none' : '';
   }
 
-  // Lets an embedding page (compare.html) snapshot this page's state before
-  // switching the iframe to a different layout variant, then replay it once
-  // the new page has loaded — so switching layouts doesn't reset the form.
-  function getMockupState(){
-    return {
-      mainToggles: Object.fromEntries(map.map(m => [m.chk, document.getElementById(m.chk).checked])),
-      brands: Array.from(document.querySelectorAll('#boundBrands .bound-brand')).map(card => {
-        const values = {};
-        map.forEach(m => { values[m.col] = card.querySelector('.col-' + m.col).checked; });
-        return { name: card.dataset.brandName, values };
-      }),
-    };
-  }
-  function applyMockupState(state){
-    if(!state) return;
-    Object.keys(state.mainToggles).forEach(chk => {
-      const el = document.getElementById(chk);
-      if(el) el.checked = state.mainToggles[chk];
-    });
-    document.getElementById('boundBrands').innerHTML = '';
-    const tabsBar = document.getElementById('boundBrandsTabs');
-    if(tabsBar) tabsBar.innerHTML = '';
-    const realToast = showToast;
-    showToast = function(){};
-    state.brands.forEach(b => {
-      const brand = AVAILABLE_BRANDS.find(x => x.name === b.name);
-      if(!brand) return;
-      addBoundBrand(brand);
-      const card = document.querySelector('#boundBrands .bound-brand:last-child');
-      map.forEach(m => {
-        const cb = card.querySelector('.col-' + m.col);
-        if(cb) cb.checked = b.values[m.col];
-      });
-    });
-    showToast = realToast;
-    updateBoundBrandsEmptyState();
-  }
-  window.getMockupState = getMockupState;
-  window.applyMockupState = applyMockupState;
-
   let pendingRemove = null;
   function askRemove(rowId, name){
     pendingRemove = rowId;
@@ -217,115 +165,5 @@ const map = [
     closeConfirm();
   }
 
-  // Walkthrough for "Configure by Card Brand" — only runs once the button is
-  // actually clicked (never auto-plays on page load), with a skip option and
-  // a small "?" button (next to the edit panel's close icon) to replay it.
-  // Also stops the bouncing NEW button once the user has clicked it.
-  const TOUR_STEPS = [
-    {
-      target: '#brandPicker',
-      title: 'Pick a card brand',
-      desc: 'Search or choose any brand here — it\'s bound below with its own checkboxes, fully independent from the main toggles above, and removable any time with its ✕.',
-    },
-  ];
-  let tourStep = 0;
-  let tourDom = null;
-
-  function markFeatureIntroSeen(){
-    try { localStorage.setItem('cardBrandTourSeen', '1'); } catch(e) {}
-    const btn = document.getElementById('brandToggleBtn');
-    if(btn) btn.classList.remove('pulse');
-  }
-
-  function buildTourDom(){
-    const backdrop = document.createElement('div');
-    backdrop.className = 'tour-backdrop';
-    const spotlight = document.createElement('div');
-    spotlight.className = 'tour-spotlight';
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tour-tooltip';
-    backdrop.appendChild(spotlight);
-    backdrop.appendChild(tooltip);
-    document.body.appendChild(backdrop);
-    return { backdrop, spotlight, tooltip };
-  }
-
-  function renderTourStep(){
-    const step = TOUR_STEPS[tourStep];
-    const targetEl = document.querySelector(step.target);
-    if(!targetEl){ endTour(); return; }
-    const rect = targetEl.getBoundingClientRect();
-    const pad = 8;
-    Object.assign(tourDom.spotlight.style, {
-      top: (rect.top - pad) + 'px',
-      left: (rect.left - pad) + 'px',
-      width: (rect.width + pad * 2) + 'px',
-      height: (rect.height + pad * 2) + 'px',
-    });
-    const dots = TOUR_STEPS.length > 1
-      ? `<span class="tour-dots">${TOUR_STEPS.map((_, i) => `<span class="tour-dot ${i === tourStep ? 'active' : ''}"></span>`).join('')}</span>`
-      : '<span></span>';
-    tourDom.tooltip.innerHTML = `
-      <div class="tour-tooltip-title">${step.title}</div>
-      <div class="tour-tooltip-desc">${step.desc}</div>
-      <div class="tour-tooltip-actions">
-        ${dots}
-        <span style="display:flex;gap:8px;">
-          <button type="button" class="tour-skip" onclick="endTour()">Skip</button>
-          <button type="button" class="tour-next" onclick="tourNext()">${tourStep === TOUR_STEPS.length - 1 ? 'Got it' : 'Next'}</button>
-        </span>
-      </div>
-    `;
-    tourDom.tooltip.style.left = '16px';
-    tourDom.tooltip.style.top = (rect.bottom + pad + 12) + 'px';
-    requestAnimationFrame(() => {
-      const tw = tourDom.tooltip.offsetWidth;
-      const th = tourDom.tooltip.offsetHeight;
-      let left = Math.min(Math.max(16, rect.left), window.innerWidth - tw - 16);
-      let top = rect.bottom + pad + 12;
-      if(top + th > window.innerHeight - 16){
-        top = Math.max(16, rect.top - th - pad - 12);
-      }
-      tourDom.tooltip.style.left = left + 'px';
-      tourDom.tooltip.style.top = top + 'px';
-    });
-  }
-
-  function startTour(){
-    if(tourDom) return;
-    // The tour's first step points at the brand dropdown, so make sure it's
-    // actually open — matters when replayed via the "?" button rather than
-    // launched from a real click on the toggle button.
-    const picker = document.getElementById('brandPicker');
-    if(picker && !picker.classList.contains('open')){
-      picker.classList.add('open');
-      const btn = document.getElementById('brandToggleBtn');
-      if(btn) btn.classList.add('active');
-      renderBrandPicker('');
-    }
-    tourStep = 0;
-    tourDom = buildTourDom();
-    renderTourStep();
-  }
-  function tourNext(){
-    if(tourStep < TOUR_STEPS.length - 1){
-      tourStep++;
-      renderTourStep();
-    } else {
-      endTour();
-    }
-  }
-  function endTour(){
-    if(tourDom){ tourDom.backdrop.remove(); tourDom = null; }
-    markFeatureIntroSeen();
-  }
-  window.startTour = startTour;
-
-  (function(){
-    let seen = false;
-    try { seen = !!localStorage.getItem('cardBrandTourSeen'); } catch(e) {}
-    if(!seen){
-      const btn = document.getElementById('brandToggleBtn');
-      if(btn) btn.classList.add('pulse');
-    }
-  })();
+  // Draws the eye to the button on every page load, until it's clicked.
+  document.getElementById('brandToggleBtn').classList.add('pulse');
