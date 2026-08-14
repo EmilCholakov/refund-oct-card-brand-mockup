@@ -106,6 +106,9 @@ const map = [
     document.getElementById('brandPicker').classList.remove('open');
     document.getElementById('brandToggleBtn').classList.remove('active');
     if(brand) addBoundBrand(brand);
+    // The tour's only step is "pick a brand" — performing that action
+    // finishes the tour on its own, no need to click its own button.
+    if(tourDom) endTour();
   }
 
   let brandCounter = 0;
@@ -218,12 +221,7 @@ const map = [
     {
       target: '#brandPicker',
       title: 'Pick a card brand',
-      desc: 'Search or choose any brand here — Visa, Mastercard, or others. It gets added with its own settings.',
-    },
-    {
-      target: '#boundBrandsWrap',
-      title: 'Bound right into the form',
-      desc: 'It lands here with its own checkboxes, fully independent from the main toggles above. Each one has its own ✕ to remove it and fall back to following main.',
+      desc: 'Search or choose any brand here — it\'s bound below with its own checkboxes, fully independent from the main toggles above, and removable any time with its ✕.',
     },
   ];
   let tourStep = 0;
@@ -260,11 +258,14 @@ const map = [
       width: (rect.width + pad * 2) + 'px',
       height: (rect.height + pad * 2) + 'px',
     });
+    const dots = TOUR_STEPS.length > 1
+      ? `<span class="tour-dots">${TOUR_STEPS.map((_, i) => `<span class="tour-dot ${i === tourStep ? 'active' : ''}"></span>`).join('')}</span>`
+      : '<span></span>';
     tourDom.tooltip.innerHTML = `
       <div class="tour-tooltip-title">${step.title}</div>
       <div class="tour-tooltip-desc">${step.desc}</div>
       <div class="tour-tooltip-actions">
-        <span class="tour-dots">${TOUR_STEPS.map((_, i) => `<span class="tour-dot ${i === tourStep ? 'active' : ''}"></span>`).join('')}</span>
+        ${dots}
         <span style="display:flex;gap:8px;">
           <button type="button" class="tour-skip" onclick="endTour()">Skip</button>
           <button type="button" class="tour-next" onclick="tourNext()">${tourStep === TOUR_STEPS.length - 1 ? 'Got it' : 'Next'}</button>
