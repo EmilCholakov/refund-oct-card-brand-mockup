@@ -64,8 +64,19 @@
   const buttons = document.querySelectorAll('.opt-btn');
   const frame = document.getElementById('preview');
 
-  // Each layout variant is its own independent page — switching just loads
-  // it fresh, with nothing carried over from the other one.
+  // Only what the user explicitly clicked Save on gets carried across a
+  // layout switch — held in memory here, so a real refresh of this page
+  // (not just the iframe) always starts clean.
+  let savedState = null;
+  window.receiveMockupSave = function(state){ savedState = state; };
+
+  frame.addEventListener('load', () => {
+    if(!savedState) return;
+    try {
+      if(frame.contentWindow.applyMockupState) frame.contentWindow.applyMockupState(savedState);
+    } catch(e) { /* not ready yet — nothing to do */ }
+  });
+
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
       if(btn.classList.contains('active')) return;

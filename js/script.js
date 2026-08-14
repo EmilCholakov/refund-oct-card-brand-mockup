@@ -165,5 +165,55 @@ const map = [
     closeConfirm();
   }
 
+  function getMockupState(){
+    return {
+      mainToggles: Object.fromEntries(map.map(m => [m.chk, document.getElementById(m.chk).checked])),
+      brands: Array.from(document.querySelectorAll('#boundBrands .bound-brand')).map(card => {
+        const values = {};
+        map.forEach(m => { values[m.col] = card.querySelector('.col-' + m.col).checked; });
+        return { name: card.dataset.brandName, values };
+      }),
+    };
+  }
+  function applyMockupState(state){
+    if(!state) return;
+    Object.keys(state.mainToggles).forEach(chk => {
+      const el = document.getElementById(chk);
+      if(el) el.checked = state.mainToggles[chk];
+    });
+    document.getElementById('boundBrands').innerHTML = '';
+    const tabsBar = document.getElementById('boundBrandsTabs');
+    if(tabsBar) tabsBar.innerHTML = '';
+    const realToast = showToast;
+    showToast = function(){};
+    state.brands.forEach(b => {
+      const brand = AVAILABLE_BRANDS.find(x => x.name === b.name);
+      if(!brand) return;
+      addBoundBrand(brand);
+      const card = document.querySelector('#boundBrands .bound-brand:last-child');
+      map.forEach(m => {
+        const cb = card.querySelector('.col-' + m.col);
+        if(cb) cb.checked = b.values[m.col];
+      });
+    });
+    showToast = realToast;
+    updateBoundBrandsEmptyState();
+  }
+  window.applyMockupState = applyMockupState;
+
+  // Saving hands the current state up to the embedding compare.html page (if
+  // any) so it survives switching layout variants — but only what was
+  // explicitly saved, and only for as long as compare.html itself isn't
+  // reloaded (a real refresh always starts clean).
+  function saveAccountForm(){
+    showToast('Saved');
+    try {
+      if(window.parent && window.parent !== window && typeof window.parent.receiveMockupSave === 'function'){
+        window.parent.receiveMockupSave(getMockupState());
+      }
+    } catch(e) { /* not embedded, or cross-origin — nothing to hand up */ }
+  }
+  window.saveAccountForm = saveAccountForm;
+
   // Draws the eye to the button on every page load, until it's clicked.
   document.getElementById('brandToggleBtn').classList.add('pulse');
