@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Credit Card Gateway Accounts — Card Brand Refund/OCT Config (Mockup)</title>
+<title>Credit Card Gateway Accounts — Card Brand Refund/OCT Config (Mockup, Tabs)</title>
 <link rel="stylesheet" href="style/styles.css">
 </head>
 <body>
@@ -107,6 +107,7 @@
             </div>
           </div>
 
+          <div class="brand-tabs-bar" id="boundBrandsTabs"></div>
           <div class="bound-brands" id="boundBrands"></div>
         </div>
 
@@ -133,6 +134,81 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/script.js"></script>
+<script>
+  // Tabs variant: only one bound brand's config is ever shown at a time, so
+  // adding more brands never grows the config area — you switch between
+  // them with small tab chips instead of scrolling a growing stack.
+  let activeBrandId = null;
+
+  function renderTabsBar(){
+    const bar = document.getElementById('boundBrandsTabs');
+    const cards = Array.from(document.querySelectorAll('#boundBrands .bound-brand'));
+    bar.style.display = cards.length ? 'flex' : 'none';
+    bar.innerHTML = cards.map(card => {
+      const id = card.getAttribute('data-brand');
+      const name = card.querySelector('.brand-cell').textContent.trim();
+      const swatch = card.querySelector('.brand-swatch').outerHTML;
+      return `
+        <button type="button" class="brand-tab ${id === activeBrandId ? 'active' : ''}" onclick="selectBrandTab('${id}')">
+          ${swatch}<span>${name}</span>
+          <span class="brand-tab-x" onclick="event.stopPropagation(); askRemove('${id}','${name.replace(/'/g,"")}')">✕</span>
+        </button>
+      `;
+    }).join('');
+  }
+
+  function selectBrandTab(id){
+    activeBrandId = id;
+    document.querySelectorAll('#boundBrands .bound-brand').forEach(card => {
+      card.style.display = card.getAttribute('data-brand') === id ? '' : 'none';
+    });
+    renderTabsBar();
+  }
+
+  function addBoundBrand(brand){
+    brandCounter++;
+    const rowId = 'brand-' + brandCounter;
+    const card = document.createElement('div');
+    card.className = 'bound-brand';
+    card.setAttribute('data-brand', rowId);
+    card.innerHTML = `
+      <div class="bound-brand-head">
+        <div class="brand-cell">${swatchHtml(brand)}${brand.name}</div>
+      </div>
+      <div class="checkrow">
+        ${map.map(m => `
+          <label class="checkline">
+            <input type="checkbox" class="col-${m.col}" ${document.getElementById(m.chk).checked ? 'checked' : ''}>
+            ${m.label}
+          </label>
+        `).join('')}
+      </div>
+    `;
+    document.getElementById('boundBrands').appendChild(card);
+    selectBrandTab(rowId);
+    showToast(brand.name + ' added — switch tabs to configure other brands');
+  }
+
+  function confirmRemove(){
+    if(pendingRemove){
+      const card = document.querySelector(`.bound-brand[data-brand="${pendingRemove}"]`);
+      if(card){
+        const label = card.querySelector('.brand-cell').textContent.trim();
+        const wasActive = pendingRemove === activeBrandId;
+        card.remove();
+        if(wasActive){
+          const remaining = document.querySelector('#boundBrands .bound-brand');
+          if(remaining) selectBrandTab(remaining.getAttribute('data-brand'));
+          else { activeBrandId = null; renderTabsBar(); }
+        } else {
+          renderTabsBar();
+        }
+        showToast(label + ' removed');
+      }
+    }
+    closeConfirm();
+  }
+</script>
 
 </body>
 </html>

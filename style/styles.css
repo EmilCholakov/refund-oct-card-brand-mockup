@@ -64,6 +64,10 @@
   }
   .btn-purple{background:var(--purple);color:#fff;}
   .btn-purple:hover{background:var(--purple-dark);}
+  .toggle-btn{display:inline-flex;align-items:center;gap:7px;}
+  .toggle-btn .caret{display:inline-block;font-size:10px;transition:transform .18s ease;}
+  .toggle-btn.active{background:var(--purple-dark);}
+  .toggle-btn.active .caret{transform:rotate(180deg);}
   .btn-outline{background:#fff;border:1px solid var(--border);color:var(--text);}
   .pill{
     display:inline-flex;align-items:center;gap:6px;background:var(--yellow);color:#5a4200;
@@ -110,51 +114,23 @@
   .footer-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:26px;
     border-top:1px solid var(--border);padding-top:16px;}
 
-  /* Modal */
-  .overlay{
-    position:fixed;inset:0;background:rgba(20,20,30,.35);display:none;
-    align-items:flex-start;justify-content:flex-end;z-index:50;
+  /* Card brands bound directly into the general Refund Settings UI */
+  .bound-brands{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+  .bound-brand{
+    background:#fff;border:1px solid var(--border);border-radius:8px;
+    padding:12px 14px;animation:rowFlash 1.6s ease-out;
   }
-  .overlay.open{display:flex;}
-  .modal{
-    width:520px;max-width:92vw;background:#fff;height:100%;box-shadow:-10px 0 30px rgba(0,0,0,.15);
-    display:flex;flex-direction:column;animation:slidein .18s ease-out;
-  }
-  @keyframes slidein{from{transform:translateX(24px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;
-    border-bottom:1px solid var(--border);}
-  .modal-head h3{margin:0;font-size:14.5px;}
-  .modal-body{padding:18px 20px;overflow-y:auto;flex:1;}
-  .info-banner{
-    display:flex;gap:10px;background:#eef4ff;border:1px solid #cfe0ff;color:#2952a3;
-    padding:10px 12px;border-radius:8px;font-size:11.5px;margin-bottom:16px;line-height:1.5;
-  }
-  .cb-table{width:100%;border-collapse:collapse;}
-  .cb-table th{
-    font-size:10.5px;color:var(--text-mute);text-align:center;padding:6px 4px;
-    border-bottom:1px solid var(--border);font-weight:700;
-  }
-  .cb-table th:first-child{text-align:left;}
-  .cb-table td{padding:12px 4px;text-align:center;border-bottom:1px solid var(--border);}
-  .brand-cell{display:flex;align-items:center;gap:8px;text-align:left;font-weight:600;font-size:12.5px;}
+  .bound-brand-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .bound-brand .checkrow{margin-bottom:0;}
+  .brand-cell{display:flex;align-items:center;gap:8px;text-align:left;font-weight:700;font-size:12.5px;}
   .brand-swatch{width:26px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;
     font-size:8px;color:#fff;font-weight:800;}
   .visa-swatch{background:#1a1f71;}
   .mc-swatch{background:linear-gradient(90deg,#eb001b 50%, #f79e1b 50%);}
-  .cb-check{
-    width:17px;height:17px;accent-color:var(--purple);cursor:pointer;
-  }
-  .cb-check:disabled{cursor:not-allowed;opacity:.35;}
-  .col-disabled-note{font-size:9px;color:#c0392b;font-weight:600;display:block;margin-top:3px;}
-  .add-brand-btn{
-    margin-top:14px;width:100%;border:1px dashed var(--purple);color:var(--purple-dark);
-    background:#fff;border-radius:7px;padding:10px;font-size:12px;font-weight:600;cursor:pointer;
-    position:relative;
-  }
   .brand-picker{
-    display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);
+    display:none;position:absolute;right:0;top:calc(100% + 8px);width:300px;max-width:90vw;
     background:#fff;border:1px solid var(--border);border-radius:9px;
-    box-shadow:0 12px 30px rgba(0,0,0,.14);padding:8px;z-index:20;
+    box-shadow:0 12px 30px rgba(0,0,0,.14);padding:8px;z-index:30;
   }
   .brand-picker.open{display:block;}
   .brand-picker-search{
@@ -179,17 +155,27 @@
     0%{background:var(--purple-light);}
     100%{background:transparent;}
   }
-  tr.brand-row-new td{animation:rowFlash 1.6s ease-out;}
-  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--border);}
-  .locked-msg{font-size:10.5px;color:var(--text-mute);margin-top:14px;}
-  .save-hint{font-size:10px;color:var(--text-mute);margin-right:auto;align-self:center;}
 
   .remove-brand{
     background:none;border:none;color:#c0392b;font-size:14px;cursor:pointer;
     margin-left:8px;line-height:1;padding:2px;
   }
   .remove-brand:hover{color:#a0293f;}
-  .brand-row-inner{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+
+  /* Tabs variant: small tab buttons switch which bound brand's config shows,
+     so the config area stays a fixed size regardless of how many are added. */
+  .brand-tabs-bar{display:none;gap:6px;flex-wrap:wrap;margin-top:12px;}
+  .brand-tab{
+    display:inline-flex;align-items:center;gap:6px;background:var(--bg);
+    border:1px solid var(--border);border-radius:20px;padding:6px 6px 6px 10px;
+    font-size:11.5px;font-weight:600;color:var(--text);cursor:pointer;
+  }
+  .brand-tab.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+  .brand-tab-x{
+    margin-left:2px;opacity:.65;font-size:10px;line-height:1;padding:3px 4px;border-radius:50%;
+  }
+  .brand-tab-x:hover{opacity:1;background:rgba(0,0,0,.12);}
+  .brand-tab.active .brand-tab-x:hover{background:rgba(255,255,255,.25);}
 
   .toast{
     position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;

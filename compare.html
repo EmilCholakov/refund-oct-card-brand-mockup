@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compare Card Brand Config Mockups</title>
+<style>
+  :root{
+    --navy:#1c2438;--purple:#6c4fe0;--purple-dark:#5638c9;--purple-light:#efe9ff;
+    --border:#e4e6ef;--text:#2c3145;--text-mute:#8a8fa3;--bg:#f6f7fb;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);height:100vh;overflow:hidden;position:relative;
+  }
+  .frame-wrap{position:absolute;inset:0;background:#dfe1ea;}
+  iframe{width:100%;height:100%;border:none;display:block;}
+
+  /* Floats on top of the app preview instead of pushing it down */
+  .switcher{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    z-index:1000;display:flex;align-items:center;gap:12px;
+    background:rgba(255,255,255,.98);border:1px solid var(--border);border-radius:16px;
+    padding:10px;box-shadow:0 16px 40px rgba(20,20,30,.25);
+    backdrop-filter:blur(6px);
+  }
+  .switcher-label{
+    font-size:10px;font-weight:700;color:var(--text-mute);text-transform:uppercase;
+    letter-spacing:.4px;padding:0 4px 0 8px;white-space:nowrap;
+  }
+  .btn-row{display:flex;gap:8px;}
+  .opt-btn{
+    border:2px solid var(--border);background:#fff;border-radius:12px;
+    padding:10px 16px;text-align:left;cursor:pointer;transition:all .15s ease;
+    display:flex;flex-direction:column;gap:2px;min-width:150px;
+  }
+  .opt-btn:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 8px 18px rgba(108,79,224,.16);}
+  .opt-btn.active{border-color:var(--purple);background:var(--purple-light);box-shadow:0 8px 18px rgba(108,79,224,.2);}
+  .opt-btn .title{font-size:13.5px;font-weight:700;color:var(--text);}
+  .opt-btn .desc{font-size:10.5px;color:var(--text-mute);line-height:1.35;}
+</style>
+</head>
+<body>
+
+<div class="frame-wrap">
+  <iframe id="preview" src="index.html"></iframe>
+</div>
+
+<div class="switcher">
+  <span class="switcher-label">Layout</span>
+  <div class="btn-row" id="btnRow">
+    <button class="opt-btn active" data-src="index.html">
+      <span class="title">Version 1 · Stacked</span>
+      <span class="desc">Bound brands stack, area grows</span>
+    </button>
+    <button class="opt-btn" data-src="index-tabs.html">
+      <span class="title">Version 2 · Tabs</span>
+      <span class="desc">Bound brands switch via tabs, fixed size</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.opt-btn');
+  const frame = document.getElementById('preview');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      frame.src = btn.dataset.src;
+    });
+  });
+</script>
+
+</body>
+</html>
