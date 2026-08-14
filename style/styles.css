@@ -99,32 +99,23 @@
   .checkline{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text);}
   .checkrow{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:14px;}
 
-  .config-row{
-    display:flex;align-items:center;justify-content:space-between;gap:14px;
-    margin-top:10px;
-  }
-  .config-row .left{display:flex;align-items:center;gap:10px;}
-  .config-row .desc{font-size:11.5px;color:#5a4fae;}
-  .config-row .desc b{color:var(--purple-dark);}
+  .config-row{margin-top:10px;}
+  /* NEW badge lives inside the button itself, so it bounces along with it
+     as one visual unit instead of floating separately beside it. */
   .new-badge{
-    background:var(--purple);color:#fff;font-size:9.5px;font-weight:700;
+    background:rgba(255,255,255,.22);color:#fff;font-size:9px;font-weight:700;
     padding:2px 6px;border-radius:10px;letter-spacing:.3px;
-    display:inline-block;
+    display:inline-block;margin-right:2px;
   }
-  /* Draws the eye to the new feature until the user clicks it or takes the tour */
-  @keyframes badgeBounce{
-    0%, 100%{transform:translateY(0);}
-    15%{transform:translateY(-5px);}
-    30%{transform:translateY(0);}
+  /* Draws the eye to the new feature until the user clicks the button */
+  @keyframes btnBouncePulse{
+    0%, 100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(108,79,224,.45);}
+    15%{transform:translateY(-6px);}
+    30%{transform:translateY(0);box-shadow:0 0 0 8px rgba(108,79,224,0);}
     45%{transform:translateY(-3px);}
     60%{transform:translateY(0);}
   }
-  @keyframes btnGlowPulse{
-    0%, 100%{box-shadow:0 0 0 0 rgba(108,79,224,.45);}
-    50%{box-shadow:0 0 0 7px rgba(108,79,224,0);}
-  }
-  .new-badge.pulse{animation:badgeBounce 1.7s ease-in-out infinite;animation-delay:.6s;}
-  #brandToggleBtn.pulse{animation:btnGlowPulse 1.7s ease-in-out infinite;animation-delay:.6s;}
+  #brandToggleBtn.pulse{animation:btnBouncePulse 1.7s ease-in-out infinite;animation-delay:.6s;}
   .footer-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:26px;
     border-top:1px solid var(--border);padding-top:16px;}
 

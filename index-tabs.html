@@ -63,7 +63,7 @@
         <div class="edit-header">
           <h2>Edit Credit Card Gateway Account</h2>
           <div style="display:flex;align-items:center;gap:10px;">
-            <button type="button" class="tour-relaunch" onclick="startTour()" title="Take the tour">?</button>
+            <button type="button" class="tour-relaunch" onclick="event.stopPropagation(); startTour()" title="Take the tour">?</button>
             <span class="close-x">✕</span>
           </div>
         </div>
@@ -91,17 +91,9 @@
           </div>
 
           <div class="config-row">
-            <div class="left">
-              <span>⚙️</span>
-              <div>
-                <div style="font-weight:700;font-size:12.5px;">Configure by Card Brand</div>
-                <div class="desc">Set <b>per-brand</b> refund &amp; OCT/payout rules, based on the toggles above</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;position:relative;">
-              <span class="new-badge">NEW</span>
+            <div style="position:relative;">
               <button class="btn btn-purple toggle-btn" id="brandToggleBtn" onclick="toggleBrandPicker(event)">
-                <span class="btn-label">Configure by Card Brand</span><span class="caret">▾</span>
+                <span class="new-badge">NEW</span><span class="btn-label">Configure by Card Brand</span><span class="caret">▾</span>
               </button>
               <div class="brand-picker" id="brandPicker">
                 <input type="text" class="brand-picker-search" id="brandSearch" placeholder="Search card brands…" oninput="renderBrandPicker(this.value)">

@@ -71,6 +71,8 @@ const map = [
 
   function toggleBrandPicker(e){
     e.stopPropagation();
+    let firstEverOpen = false;
+    try { firstEverOpen = !localStorage.getItem('cardBrandTourSeen'); } catch(err) {}
     markFeatureIntroSeen();
     const picker = document.getElementById('brandPicker');
     const btn = document.getElementById('brandToggleBtn');
@@ -82,6 +84,9 @@ const map = [
       search.value = '';
       renderBrandPicker('');
       search.focus();
+      // First time ever opening it — walk the user through what happens next,
+      // instead of auto-launching the tour on page load.
+      if(firstEverOpen) setTimeout(startTour, 150);
     }
   }
   document.addEventListener('click', e => {
@@ -205,20 +210,20 @@ const map = [
     closeConfirm();
   }
 
-  // First-time walkthrough for "Configure by Card Brand", with a skip option
-  // and a small "?" button (next to the edit panel's close icon) to replay
-  // it later. Also stops the attention-grabbing NEW badge/button pulse once
-  // the user has either taken the tour or found the button on their own.
+  // Walkthrough for "Configure by Card Brand" — only runs once the button is
+  // actually clicked (never auto-plays on page load), with a skip option and
+  // a small "?" button (next to the edit panel's close icon) to replay it.
+  // Also stops the bouncing NEW button once the user has clicked it.
   const TOUR_STEPS = [
     {
-      target: '#brandToggleBtn',
-      title: 'Configure by Card Brand',
-      desc: 'Click this any time — it opens a dropdown of card brands directly, no separate popup panel.',
+      target: '#brandPicker',
+      title: 'Pick a card brand',
+      desc: 'Search or choose any brand here — Visa, Mastercard, or others. It gets added with its own settings.',
     },
     {
       target: '#boundBrandsWrap',
       title: 'Bound right into the form',
-      desc: 'Pick a brand and it lands here with its own checkboxes, fully independent from the main toggles above. Each one has its own ✕ to remove it and fall back to following main.',
+      desc: 'It lands here with its own checkboxes, fully independent from the main toggles above. Each one has its own ✕ to remove it and fall back to following main.',
     },
   ];
   let tourStep = 0;
@@ -226,7 +231,8 @@ const map = [
 
   function markFeatureIntroSeen(){
     try { localStorage.setItem('cardBrandTourSeen', '1'); } catch(e) {}
-    document.querySelectorAll('.new-badge, #brandToggleBtn').forEach(el => el.classList.remove('pulse'));
+    const btn = document.getElementById('brandToggleBtn');
+    if(btn) btn.classList.remove('pulse');
   }
 
   function buildTourDom(){
@@ -282,6 +288,16 @@ const map = [
 
   function startTour(){
     if(tourDom) return;
+    // The tour's first step points at the brand dropdown, so make sure it's
+    // actually open — matters when replayed via the "?" button rather than
+    // launched from a real click on the toggle button.
+    const picker = document.getElementById('brandPicker');
+    if(picker && !picker.classList.contains('open')){
+      picker.classList.add('open');
+      const btn = document.getElementById('brandToggleBtn');
+      if(btn) btn.classList.add('active');
+      renderBrandPicker('');
+    }
     tourStep = 0;
     tourDom = buildTourDom();
     renderTourStep();
@@ -304,7 +320,7 @@ const map = [
     let seen = false;
     try { seen = !!localStorage.getItem('cardBrandTourSeen'); } catch(e) {}
     if(!seen){
-      document.querySelectorAll('.new-badge, #brandToggleBtn').forEach(el => el.classList.add('pulse'));
-      setTimeout(startTour, 600);
+      const btn = document.getElementById('brandToggleBtn');
+      if(btn) btn.classList.add('pulse');
     }
   })();
