@@ -64,16 +64,19 @@
   const buttons = document.querySelectorAll('.opt-btn');
   const frame = document.getElementById('preview');
 
-  // Only what the user explicitly clicked Save on gets carried across a
-  // layout switch — held in memory here, so a real refresh of this page
-  // (not just the iframe) always starts clean.
-  let savedState = null;
-  window.receiveMockupSave = function(state){ savedState = state; };
+  // Each layout variant keeps its OWN save, completely independent of the
+  // other — saving in Version 1 never affects Version 2's data and vice
+  // versa. Held in memory here (keyed by which page it belongs to), so a
+  // real refresh of this page always starts both clean.
+  let currentSrc = frame.getAttribute('src');
+  const savedStates = {};
+  window.receiveMockupSave = function(state){ savedStates[currentSrc] = state; };
 
   frame.addEventListener('load', () => {
-    if(!savedState) return;
+    const state = savedStates[currentSrc];
+    if(!state) return;
     try {
-      if(frame.contentWindow.applyMockupState) frame.contentWindow.applyMockupState(savedState);
+      if(frame.contentWindow.applyMockupState) frame.contentWindow.applyMockupState(state);
     } catch(e) { /* not ready yet — nothing to do */ }
   });
 
@@ -82,7 +85,8 @@
       if(btn.classList.contains('active')) return;
       buttons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      frame.src = btn.dataset.src;
+      currentSrc = btn.dataset.src;
+      frame.src = currentSrc;
     });
   });
 </script>
