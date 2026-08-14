@@ -134,7 +134,7 @@
   .visa-swatch{background:#1a1f71;}
   .mc-swatch{background:linear-gradient(90deg,#eb001b 50%, #f79e1b 50%);}
   .brand-picker{
-    display:none;position:absolute;right:0;top:calc(100% + 8px);width:300px;max-width:90vw;
+    display:none;position:absolute;left:0;top:calc(100% + 8px);width:300px;max-width:90vw;
     background:#fff;border:1px solid var(--border);border-radius:9px;
     box-shadow:0 12px 30px rgba(0,0,0,.14);padding:8px;z-index:30;
   }
