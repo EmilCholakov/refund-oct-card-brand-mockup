@@ -63,8 +63,23 @@
 <script>
   const buttons = document.querySelectorAll('.opt-btn');
   const frame = document.getElementById('preview');
+  let savedState = null;
+
+  // Reapply whatever was captured just before the switch, once the newly
+  // loaded variant's own script has run and its functions exist.
+  frame.addEventListener('load', () => {
+    if(!savedState) return;
+    try {
+      if(frame.contentWindow.applyMockupState) frame.contentWindow.applyMockupState(savedState);
+    } catch(e) { /* cross-origin or not ready — nothing to do */ }
+  });
+
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
+      if(btn.classList.contains('active')) return;
+      try {
+        if(frame.contentWindow.getMockupState) savedState = frame.contentWindow.getMockupState();
+      } catch(e) { /* ignore — first load or cross-origin */ }
       buttons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       frame.src = btn.dataset.src;

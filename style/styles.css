@@ -101,8 +101,7 @@
 
   .config-row{
     display:flex;align-items:center;justify-content:space-between;gap:14px;
-    background:var(--purple-light);border:1px dashed var(--purple);border-radius:8px;
-    padding:12px 14px;margin-top:10px;
+    margin-top:10px;
   }
   .config-row .left{display:flex;align-items:center;gap:10px;}
   .config-row .desc{font-size:11.5px;color:#5a4fae;}
@@ -110,11 +109,27 @@
   .new-badge{
     background:var(--purple);color:#fff;font-size:9.5px;font-weight:700;
     padding:2px 6px;border-radius:10px;letter-spacing:.3px;
+    display:inline-block;
   }
+  /* Draws the eye to the new feature until the user clicks it or takes the tour */
+  @keyframes badgeBounce{
+    0%, 100%{transform:translateY(0);}
+    15%{transform:translateY(-5px);}
+    30%{transform:translateY(0);}
+    45%{transform:translateY(-3px);}
+    60%{transform:translateY(0);}
+  }
+  @keyframes btnGlowPulse{
+    0%, 100%{box-shadow:0 0 0 0 rgba(108,79,224,.45);}
+    50%{box-shadow:0 0 0 7px rgba(108,79,224,0);}
+  }
+  .new-badge.pulse{animation:badgeBounce 1.7s ease-in-out infinite;animation-delay:.6s;}
+  #brandToggleBtn.pulse{animation:btnGlowPulse 1.7s ease-in-out infinite;animation-delay:.6s;}
   .footer-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:26px;
     border-top:1px solid var(--border);padding-top:16px;}
 
   /* Card brands bound directly into the general Refund Settings UI */
+  .bound-brands-empty{font-size:11.5px;color:var(--text-mute);padding:10px 2px 0;}
   .bound-brands{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
   .bound-brand{
     background:#fff;border:1px solid var(--border);border-radius:8px;
@@ -196,3 +211,37 @@
   .confirm-actions{display:flex;justify-content:flex-end;gap:8px;}
   .btn-danger{background:#e0455f;color:#fff;}
   .btn-danger:hover{background:#c93951;}
+
+  /* "?" button in the edit-panel header that replays the feature tour */
+  .tour-relaunch{
+    width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:#fff;
+    color:var(--text-mute);font-size:11px;font-weight:700;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;padding:0;
+  }
+  .tour-relaunch:hover{border-color:var(--purple);color:var(--purple);}
+
+  /* Guided walkthrough: spotlight cutout + tooltip, skippable at every step */
+  .tour-backdrop{position:fixed;inset:0;z-index:2000;}
+  .tour-spotlight{
+    position:fixed;border-radius:10px;border:2px solid var(--purple);
+    box-shadow:0 0 0 9999px rgba(15,17,28,.55);
+    transition:top .25s ease,left .25s ease,width .25s ease,height .25s ease;
+    pointer-events:none;
+  }
+  .tour-tooltip{
+    position:fixed;max-width:300px;background:#fff;border-radius:12px;
+    padding:16px 18px;box-shadow:0 16px 40px rgba(0,0,0,.3);z-index:2001;
+  }
+  .tour-tooltip-title{font-size:13.5px;font-weight:700;margin-bottom:6px;color:var(--text);}
+  .tour-tooltip-desc{font-size:12px;color:var(--text-mute);line-height:1.5;margin-bottom:14px;}
+  .tour-tooltip-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .tour-dots{display:flex;gap:5px;}
+  .tour-dot{width:6px;height:6px;border-radius:50%;background:var(--border);}
+  .tour-dot.active{background:var(--purple);}
+  .tour-skip{background:none;border:none;color:var(--text-mute);font-size:11.5px;cursor:pointer;padding:6px 4px;}
+  .tour-skip:hover{color:var(--text);text-decoration:underline;}
+  .tour-next{
+    background:var(--purple);color:#fff;border:none;border-radius:6px;
+    padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .tour-next:hover{background:var(--purple-dark);}

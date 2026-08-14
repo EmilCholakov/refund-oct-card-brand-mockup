@@ -62,7 +62,10 @@
       <div class="edit-panel">
         <div class="edit-header">
           <h2>Edit Credit Card Gateway Account</h2>
-          <span class="close-x">✕</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button type="button" class="tour-relaunch" onclick="startTour()" title="Take the tour">?</button>
+            <span class="close-x">✕</span>
+          </div>
         </div>
 
         <div class="section">
@@ -107,7 +110,10 @@
             </div>
           </div>
 
-          <div class="bound-brands" id="boundBrands"></div>
+          <div class="bound-brands-wrap" id="boundBrandsWrap">
+            <div class="bound-brands" id="boundBrands"></div>
+            <div class="bound-brands-empty" id="boundBrandsEmpty">No card brand overrides yet — pick one above to add it here.</div>
+          </div>
         </div>
 
         <div class="footer-actions">
