@@ -92,9 +92,13 @@ const map = [
   document.addEventListener('click', e => {
     const picker = document.getElementById('brandPicker');
     const btn = document.getElementById('brandToggleBtn');
-    if(picker && !picker.contains(e.target) && !(btn && btn.contains(e.target))){
+    const tooltip = document.querySelector('.tour-tooltip');
+    if(picker && !picker.contains(e.target) && !(btn && btn.contains(e.target)) && !(tooltip && tooltip.contains(e.target))){
       picker.classList.remove('open');
       if(btn) btn.classList.remove('active');
+      // Dismissing the dropdown this way removes the thing the tour is
+      // pointing at — the walkthrough shouldn't linger on screen after that.
+      if(tourDom) endTour();
     }
   });
   document.addEventListener('keydown', e => {
